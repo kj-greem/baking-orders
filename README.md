@@ -31,6 +31,101 @@
       radial-gradient(ellipse at 80% 90%, rgba(212,117,107,0.07) 0%, transparent 50%);
   }
 
+  /* ---------- LOGIN SCREEN ---------- */
+  #login-screen {
+    position: fixed;
+    inset: 0;
+    background: var(--cream);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 200;
+    background-image:
+      radial-gradient(ellipse at 20% 10%, rgba(196,129,58,0.08) 0%, transparent 60%),
+      radial-gradient(ellipse at 80% 90%, rgba(212,117,107,0.07) 0%, transparent 50%);
+  }
+
+  #login-screen.hidden { display: none; }
+
+  .login-card {
+    background: var(--warm-white);
+    border: 1px solid var(--border);
+    padding: 2.5rem;
+    width: 90%;
+    max-width: 360px;
+    text-align: center;
+  }
+
+  .login-card h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.8rem;
+    color: var(--brown);
+    margin-bottom: 0.25rem;
+  }
+
+  .login-card h1 em { color: var(--caramel); font-style: italic; }
+
+  .login-card p.sub {
+    font-size: 0.7rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 1.75rem;
+  }
+
+  .login-card .form-group { margin-bottom: 1rem; text-align: left; }
+
+  .login-card label {
+    display: block;
+    font-size: 0.62rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 0.35rem;
+  }
+
+  .login-card input {
+    width: 100%;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.85rem;
+    padding: 0.65rem 0.75rem;
+    border: 1px solid var(--border);
+    background: var(--cream);
+    color: var(--ink);
+    border-radius: 2px;
+    outline: none;
+  }
+
+  .login-card input:focus { border-color: var(--caramel); background: var(--warm-white); }
+
+  .login-card button {
+    width: 100%;
+    margin-top: 0.5rem;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.78rem;
+    letter-spacing: 0.06em;
+    padding: 0.75rem 1.1rem;
+    border-radius: 2px;
+    cursor: pointer;
+    border: none;
+    background: var(--brown);
+    color: var(--cream);
+    transition: background 0.15s;
+  }
+
+  .login-card button:hover { background: var(--caramel); }
+  .login-card button:disabled { opacity: 0.6; cursor: not-allowed; }
+
+  .login-error {
+    margin-top: 1rem;
+    font-size: 0.72rem;
+    color: var(--rose);
+    min-height: 1em;
+  }
+
+  #app-wrap { display: none; }
+  #app-wrap.visible { display: block; }
+
   header {
     padding: 2.5rem 3rem 1.5rem;
     border-bottom: 1px solid var(--border);
@@ -63,6 +158,12 @@
     text-transform: uppercase;
   }
 
+  .header-right {
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+  }
+
   .month-nav {
     display: flex;
     align-items: center;
@@ -90,6 +191,22 @@
     min-width: 130px;
     text-align: center;
   }
+
+  #signout-btn {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 0.4rem 0.8rem;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--muted);
+    border-radius: 20px;
+    cursor: pointer;
+    transition: all 0.12s;
+  }
+
+  #signout-btn:hover { border-color: var(--rose); color: var(--rose); }
 
   .stats-bar {
     display: flex;
@@ -418,15 +535,39 @@
 </head>
 <body>
 
+<!-- ===== LOGIN SCREEN ===== -->
+<div id="login-screen">
+  <div class="login-card">
+    <h1>Baked <em>Orders</em></h1>
+    <p class="sub">Sign in to continue</p>
+    <div class="form-group">
+      <label>Email</label>
+      <input type="email" id="login-email" autocomplete="username">
+    </div>
+    <div class="form-group">
+      <label>Password</label>
+      <input type="password" id="login-password" autocomplete="current-password">
+    </div>
+    <button id="login-btn" onclick="handleLogin()">Sign In</button>
+    <div class="login-error" id="login-error"></div>
+  </div>
+</div>
+
+<!-- ===== APP ===== -->
+<div id="app-wrap">
+
 <header>
   <div class="header-left">
     <h1>Baked <em>Orders</em></h1>
     <p>Collaborative monthly tracker</p>
   </div>
-  <div class="month-nav">
-    <button onclick="changeMonth(-1)">‹</button>
-    <span id="month-label"></span>
-    <button onclick="changeMonth(1)">›</button>
+  <div class="header-right">
+    <div class="month-nav">
+      <button onclick="changeMonth(-1)">‹</button>
+      <span id="month-label"></span>
+      <button onclick="changeMonth(1)">›</button>
+    </div>
+    <button id="signout-btn" onclick="handleSignOut()">Sign Out</button>
   </div>
 </header>
 
@@ -559,6 +700,8 @@
   </aside>
 </main>
 
+</div><!-- /#app-wrap -->
+
 <div class="modal-overlay" id="modal">
   <div class="modal">
     <div class="modal-header">
@@ -617,20 +760,102 @@
   const FIREBASE_DB = "https://baking-orders-default-rtdb.asia-southeast1.firebasedatabase.app";
   const FIREBASE_API_KEY = "AIzaSyCDTbjwS7O30LQiIh2SdRTsjCHi_NYzcOk";
 
-  // Anonymous auth: signs the client into Firebase so requests carry a real
-  // identity token instead of the raw API key. Required for the database
-  // rules ".read": "auth != null" / ".write": "auth != null".
+  // ---------- AUTH STATE (in-memory only — never persisted to storage) ----------
   let idToken = null;
+  let refreshToken = null;
+  let tokenExpiresAt = 0;
 
-  async function signInAnon() {
-    const res = await fetch(`https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=${FIREBASE_API_KEY}`, {
+  async function signInWithPassword(email, password) {
+    const res = await fetch(`https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=${FIREBASE_API_KEY}`, {
       method: 'POST',
-      body: JSON.stringify({ returnSecureToken: true })
+      body: JSON.stringify({ email, password, returnSecureToken: true })
     });
     const data = await res.json();
+    if (data.error) {
+      throw new Error(data.error.message || 'Sign in failed');
+    }
     idToken = data.idToken;
+    refreshToken = data.refreshToken;
+    tokenExpiresAt = Date.now() + (parseInt(data.expiresIn, 10) * 1000);
+    return data;
   }
 
+  async function refreshIdToken() {
+    if (!refreshToken) return;
+    const res = await fetch(`https://securetoken.googleapis.com/v1/token?key=${FIREBASE_API_KEY}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: `grant_type=refresh_token&refresh_token=${refreshToken}`
+    });
+    const data = await res.json();
+    if (data.id_token) {
+      idToken = data.id_token;
+      refreshToken = data.refresh_token;
+      tokenExpiresAt = Date.now() + (parseInt(data.expires_in, 10) * 1000);
+    }
+  }
+
+  // Ensures idToken is valid before every DB call — refreshes if near expiry
+  async function ensureFreshToken() {
+    if (!idToken) return;
+    if (Date.now() > tokenExpiresAt - 60000) {
+      await refreshIdToken();
+    }
+  }
+
+  function friendlyAuthError(msg) {
+    if (!msg) return 'Something went wrong. Try again.';
+    if (msg.includes('INVALID_LOGIN_CREDENTIALS') || msg.includes('EMAIL_NOT_FOUND') || msg.includes('INVALID_PASSWORD')) {
+      return 'Incorrect email or password.';
+    }
+    if (msg.includes('TOO_MANY_ATTEMPTS')) return 'Too many attempts. Try again later.';
+    if (msg.includes('USER_DISABLED')) return 'This account has been disabled.';
+    return 'Sign in failed. Please try again.';
+  }
+
+  async function handleLogin() {
+    const email = document.getElementById('login-email').value.trim();
+    const password = document.getElementById('login-password').value;
+    const btn = document.getElementById('login-btn');
+    const errEl = document.getElementById('login-error');
+    errEl.textContent = '';
+
+    if (!email || !password) {
+      errEl.textContent = 'Enter both email and password.';
+      return;
+    }
+
+    btn.disabled = true;
+    btn.textContent = 'Signing in…';
+
+    try {
+      await signInWithPassword(email, password);
+      document.getElementById('login-screen').classList.add('hidden');
+      document.getElementById('app-wrap').classList.add('visible');
+      loadOrders();
+      setInterval(async () => { await ensureFreshToken(); loadOrders(); }, 2000);
+    } catch (err) {
+      errEl.textContent = friendlyAuthError(err.message);
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Sign In';
+    }
+  }
+
+  function handleSignOut() {
+    idToken = null;
+    refreshToken = null;
+    tokenExpiresAt = 0;
+    document.getElementById('login-password').value = '';
+    document.getElementById('app-wrap').classList.remove('visible');
+    document.getElementById('login-screen').classList.remove('hidden');
+  }
+
+  document.getElementById('login-password').addEventListener('keydown', e => {
+    if (e.key === 'Enter') handleLogin();
+  });
+
+  // ---------- APP STATE ----------
   let currentDate = new Date();
   let currentMonth = currentDate.getMonth();
   let currentYear = currentDate.getFullYear();
@@ -701,7 +926,9 @@
   }
 
   async function loadOrders() {
+    if (!idToken) return;
     try {
+      await ensureFreshToken();
       const path = dbPath();
       const url = `${FIREBASE_DB}/${path}.json?auth=${idToken}`;
       const res = await fetch(url);
@@ -731,7 +958,7 @@
     render();
   }
 
-  function addOrder() {
+  async function addOrder() {
     const client = document.getElementById('f-client').value.trim();
     const item = document.getElementById('f-item').value.trim();
     if (!client && !item) { alert('Please fill in at least a client name or item.'); return; }
@@ -747,7 +974,8 @@
       status: document.getElementById('f-status').value,
       notes: document.getElementById('f-notes').value.trim(),
     };
-    
+
+    await ensureFreshToken();
     const url = `${FIREBASE_DB}/${dbPath()}/${newId}.json?auth=${idToken}`;
     fetch(url, {
       method: 'PUT',
@@ -764,8 +992,9 @@
     document.getElementById('f-status').value = 'pending';
   }
 
-  function deleteOrder(id) {
+  async function deleteOrder(id) {
     if (!confirm('Delete this order?')) return;
+    await ensureFreshToken();
     const url = `${FIREBASE_DB}/${dbPath()}/${id}.json?auth=${idToken}`;
     fetch(url, { method: 'DELETE' })
       .then(() => loadOrders())
@@ -797,7 +1026,7 @@
     document.getElementById('modal').classList.add('open');
   }
 
-  function saveEdit() {
+  async function saveEdit() {
     const updated = {
       client: document.getElementById('m-client').value.trim(),
       item: document.getElementById('m-item').value.trim(),
@@ -808,7 +1037,8 @@
       status: document.getElementById('m-status').value,
       notes: document.getElementById('m-notes').value.trim(),
     };
-    
+
+    await ensureFreshToken();
     const url = `${FIREBASE_DB}/${dbPath()}/${editingId}.json?auth=${idToken}`;
     fetch(url, {
       method: 'PATCH',
@@ -827,10 +1057,7 @@
     if (e.target === document.getElementById('modal')) closeModal();
   });
 
-  signInAnon().then(() => {
-    loadOrders();
-    setInterval(loadOrders, 2000);
-  });
+  // No auto sign-in anymore — app waits at the login screen until you authenticate.
 </script>
 
 </body>
